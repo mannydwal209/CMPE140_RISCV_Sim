@@ -90,6 +90,7 @@ int main() {
         cout << "r. RUN" << endl;
         cout << "s. STEP" << endl;
         cout << "x(reg). RETURN REG" << endl;
+        
         cout << "x(addr). RETURN ADR" << endl;
         cout << "pc. RETURN PC" << endl;
         cout << "q. QUIT" << endl;
@@ -100,18 +101,20 @@ int main() {
         //fetch
         //decode
         //execute
-        //
 
         switch(choice) {
             case 'r':
                 action1();
                 break;
             case 's':
-                action2();
+                action2();//do all 3 stages  but stop after dat reader reads first 32 bits (1 instruction)
                 break;
-            case 'x':
-                action3();
-                break;
+            case 'x0':
+                action3();//read user input and use value x0-x31 to determine the location from rd_write array
+                break;//ex if 0x31 then rd_write[31]
+                case 'x0':
+                action3();//read user input and use value x0-x31 to determine the location from rd_write array
+                break;//ex if 0x31 then rd_write[31]
             case 'pc':
                 action4();
                 break;
