@@ -74,7 +74,7 @@ public:
         }
 
     }
-    void execute(reg rd_write[])
+    void execute(reg rd_write[])    //change to pass by reference
     {
         switch (opcode)
         {
@@ -183,141 +183,51 @@ int main(){
             case 'r':
                 break;
             case 's':
-                 //instruction number
-                    ob[total].instruction = line; //assuming the data file has 32-bit instructions on each line
-                    ob[total].decode();
-                    
-                    //====================================================//
-                    //EXECUTE
-                    
-                    switch(ob[total].opcode){
-                        case iType:{
-                            switch(ob[total].func3){
-                                case ADDI:{
-                                    cout << "ADDI ";
-                                    //check if rs1 reg already has value, if so use it
-                                    if(!rd_write[ob[total].rs1].isSet){ 
-                                        rd_write[ob[total].rd].value = ob[total].rs1 + ob[total].immed;
-                                        rd_write[ob[total].rd].isSet=true;
-                                        cout << "result: " << rd_write[ob[total].rd].value <<endl;
-                                    }
-                                    else {
-                                        rd_write[ob[total].rd].value = rd_write[ob[total].rs1].value + ob[total].immed;
-                                        rd_write[ob[total].rd].isSet=true;
-                                        cout << "result: " << rd_write[ob[total].rd].value <<endl;
-                                    }
-                                    break;
-                                }
-                                case SLL: {
-                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
-                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
-                                    
-                                    // Bitmask to extract last 5 bits of the shift amount
-                                    int bitmask = 0b00011111;
-                                    temp_rs2 = temp_rs2 & bitmask;
 
-                                    cout << "SLL ";
-                                    rd_write[ob[total].rd].value = temp_rs1 << temp_rs2;
-                                    rd_write[ob[total].rd].isSet = true;
-                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
-                                    break;
-                                }
-                                case SRLISRAI: {
-                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
-                                    
-                                    // Immediate value contains the shift amount (lower 5 bits)
-                                    int shift_amount = ob[total].immed & 0b00011111;
-
-                                    if (ob[total].Rimmed = 0b0100000) {
-                                        cout << "SRAI ";
-                                        rd_write[ob[total].rd].value = temp_rs1 >> shift_amount;
-                                    } else {
-                                        cout << "SRLI ";
-                                        rd_write[ob[total].rd].value = (unsigned int)temp_rs1 >> shift_amount;
-                                    }
-
-                                    rd_write[ob[total].rd].isSet = true;
-                                    
-                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
-                                    break;
-                                }
-                                default:{
-                                    cout<<"not valid I-TYPE instruction"<<endl;
-                                    break;
-                                }
-                            }
-                            break;
-                        } 
-                        case rType:{
-                            switch(ob[total].func3) {
-                                case SLL: {
-                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
-                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
-                                    
-                                    // Bitmask to extract last 5 bits of the shift amount
-                                    int bitmask = 0b00011111;
-                                    temp_rs2 = temp_rs2 & bitmask;
-
-                                    cout << "SLL ";
-                                    rd_write[ob[total].rd].value = temp_rs1 << temp_rs2;
-                                    rd_write[ob[total].rd].isSet = true;
-                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                        default:{
-                            cout<<"not valid instruction"<<endl;
-                            break;
-                        }
-                    }
-
-                    total++;
-                }
-
-            }
-
-
-            // printing instructions --like pc.txt 
-            for(int i=0;i<total;i++){
-                cout <<"Instructions in binary" << endl;
-                cout << ob[i].instruction << endl << endl; //expected 32 bits
-            }
-
-            //printing reg number and value --like reg.txt
-            for(int i = 0; i < 32; i++){
-                cout << "reg number: " << i << ", reg value: " << rd_write[i].value << endl;
-            }
-            return 0;
         }
 
-        void Imem_Init(imem& ob){
-            ob.instruction = "";
-            ob.opcode = 0;
-            ob.rd = 0;
-            ob.func3 = 0;
-            ob.rs1 = 0;
-            ob.immed = 0;
-        }
+    }
 
-        void Reg_Init(reg& rd_write){
-            rd_write.value = 0;
-            rd_write.isSet = false;
-        }
+    // printing instructions --like pc.txt 
+    for(int i=0;i<total;i++){
+        cout <<"Instructions in binary" << endl;
+        cout << ob[i].instruction << endl << endl; //expected 32 bits
+    }
 
-        //converting signed binary to decimal
-        int binaryToDecimal(long n){
-            long temp=n;
-            long dec=0;
-            long base=1;
+    //printing reg number and value --like reg.txt
+    for(int i = 0; i < 32; i++){
+        cout << "reg number: " << i << ", reg value: " << rd_write[i].value << endl;
+    }
+    
+    return 0;
+    }
 
-            while(temp){
-                long last=temp%10;
-                temp=temp/10;
-                dec+=last*base;
-                base*=2;
-            }
-            dec=(dec+128)%256 -128;
-            return dec;
+    void Imem_Init(imem& ob){
+        ob.instruction = "";
+        ob.opcode = 0;
+        ob.rd = 0;
+        ob.func3 = 0;
+        ob.rs1 = 0;
+        ob.immed = 0;
+    }
+
+    void Reg_Init(reg& rd_write){
+        rd_write.value = 0;
+        rd_write.isSet = false;
+    }
+
+    //converting signed binary to decimal
+    int binaryToDecimal(long n){
+        long temp=n;
+        long dec=0;
+        long base=1;
+
+        while(temp){
+            long last=temp%10;
+            temp=temp/10;
+            dec+=last*base;
+            base*=2;
         }
+        dec=(dec+128)%256 -128;
+        return dec;
+    }
