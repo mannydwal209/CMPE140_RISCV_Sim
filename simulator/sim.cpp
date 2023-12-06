@@ -41,6 +41,10 @@ public:
     long Rimmed;
     int rs2;
 
+    void fetch(ifstream &inputFile)
+    {
+        getline(inputFile,instruction);
+    }
     void decode()
     {
         string temp;
@@ -69,6 +73,57 @@ public:
             rs2=binaryToDecimal(stoi(temp,nullptr,10));
         }
 
+    }
+    void execute(reg rd_write[])
+    {
+        switch (opcode)
+        {
+        case iType:
+            switch (func3)
+            {
+            case ADDI:
+                cout << "ADDI ";
+                rd_write[rd].value = rd_write[rs1].value + immed;
+                rd_write[rd].isSet = true;
+                cout << "result: " << rd_write[rd].value << endl;
+                break;
+            case SLLI:
+                cout << "SLLI ";
+                rd_write[rd].value = rd_write[rs1].value << (immed & 0b00011111);
+                rd_write[rd].isSet = true;
+                cout << "result: " << rd_write[rd].value << endl;
+                break;
+            case SRLISRAI:
+                cout << ((Rimmed == 0b0100000) ? "SRAI " : "SRLI ");
+                rd_write[rd].value = ((Rimmed == 0b0100000) ? (rd_write[rs1].value >> (immed & 0b00011111)) : ((unsigned int)rd_write[rs1].value >> (immed & 0b00011111)));
+                rd_write[rd].isSet = true;
+                cout << "result: " << rd_write[rd].value << endl;
+                break;
+            default:
+                cout << "Invalid I-Type instruction" << endl;
+                break;
+            }
+            break;
+
+        case rType:
+            switch (func3)
+            {
+            case SLL:
+                cout << "SLL ";
+                rd_write[rd].value = rd_write[rs1].value << (rd_write[rs2].value & 0b00011111);
+                rd_write[rd].isSet = true;
+                cout << "result: " << rd_write[rd].value << endl;
+                break;
+            default:
+                cout << "Invalid R-Type instruction" << endl;
+                break;
+            }
+            break;
+
+        default:
+            cout << "Invalid instruction" << endl;
+            break;
+        }
     }
 };
 
