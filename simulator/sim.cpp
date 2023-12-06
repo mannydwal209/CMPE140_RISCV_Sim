@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <cstring>
 #include <vector>
@@ -166,7 +167,7 @@ int main(){
     bool continueLoop = true;   //UI Variables
     int total = 0;
 
-     while(getline(inputFile,line)){
+     while(choice != 'q'){
         cout << "Select an action:" << endl;    //UI Menu (User Options)
         cout << "r. RUN" << endl;
         cout << "s. STEP" << endl;
@@ -177,12 +178,45 @@ int main(){
         cout << "Enter your choice: ";
 
         cin >> choice;  //read choice from keyboard
-        
+
+        char prefix;    //extracting register or memory address
+        unsigned int location;
+        istringstream input(choice);
+        input >> prefix >> hex >> location;
+
+        if(prefix == 'x')
+        {
+            choice = 'x';
+        }
 
         switch(choice) {
             case 'r':
+                while (total < 100) {
+                    ob[total].decode();
+                    if (ob[total].opcode == 0) {
+                        break;
+                    }
+                    ob[total].execute(rd_write);
+                    total++;
+                }
                 break;
+
             case 's':
+                if (total < 100) {
+                    ob[total].decode();
+                    ob[total].execute(rd_write);
+                    total++;
+                } else {
+                    cout << "Maximum instruction limit reached." << endl;
+                }
+                break;
+                
+            case 'x':
+                break;
+            case 'pc':
+                break;
+            case 'q':
+                break;
 
         }
 
