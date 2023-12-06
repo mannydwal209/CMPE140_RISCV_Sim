@@ -31,6 +31,13 @@ using namespace std;
 #define OR 110  //      
 #define AND 111  //     
 
+//keep track of reg values
+class reg{
+public:
+    int value;
+    bool isSet;
+};
+
 class imem{
 public:
     string instruction;
@@ -42,11 +49,43 @@ public:
     long Rimmed;
     int rs2;
 
-    void fetch(ifstream &inputFile)
+    void fetch(ifstream &inputFile);
+    void decode();
+    void execute(reg rd_write[]);    //change to pass by reference
+};
+
+void Imem_Init(imem& ob){
+    ob.instruction = "";
+    ob.opcode = 0;
+    ob.rd = 0;
+    ob.func3 = 0;
+    ob.rs1 = 0;
+    ob.immed = 0;
+}
+void Reg_Init(reg& rd_write){
+    rd_write.value = 0;
+    rd_write.isSet = false;
+}
+//converting signed binary to decimal
+int binaryToDecimal(long n){
+    long temp=n;
+    long dec=0;
+    long base=1;
+    while(temp){
+        long last=temp%10;
+        temp=temp/10;
+        dec+=last*base;
+        base*=2;
+    }
+    dec=(dec+128)%256 -128;
+    return dec;
+}
+
+void imem::fetch(ifstream &inputFile)
     {
         getline(inputFile,instruction);
     }
-    void decode()
+void imem::decode()
     {
         string temp;
 
@@ -75,8 +114,8 @@ public:
         }
 
     }
-    void execute(reg rd_write[])    //change to pass by reference
-    {
+void imem::execute(reg rd_write[])    //change to pass by reference
+{
         switch (opcode)
         {
         case iType:
@@ -125,20 +164,8 @@ public:
             cout << "Invalid instruction" << endl;
             break;
         }
-    }
-};
+}
 
-//keep track of reg values
-class reg{
-public:
-    int value;
-    bool isSet;
-};
-
-//function declarations
-void Imem_Init(imem& ob);
-void Reg_Init(reg& rd_write);
-int binaryToDecimal(long n);
 
 int main(){
 
@@ -178,10 +205,10 @@ int main(){
         cout << "Enter your choice: ";
 
         cin >> choice;  //read choice from keyboard
-
         char prefix;    //extracting register or memory address
         unsigned int location;
-        istringstream input(choice);
+        string choiceString(1, choice);
+        istringstream input(choiceString);
         input >> prefix >> hex >> location;
 
         if(prefix == 'x')
@@ -234,34 +261,4 @@ int main(){
     }
     
     return 0;
-    }
-
-    void Imem_Init(imem& ob){
-        ob.instruction = "";
-        ob.opcode = 0;
-        ob.rd = 0;
-        ob.func3 = 0;
-        ob.rs1 = 0;
-        ob.immed = 0;
-    }
-
-    void Reg_Init(reg& rd_write){
-        rd_write.value = 0;
-        rd_write.isSet = false;
-    }
-
-    //converting signed binary to decimal
-    int binaryToDecimal(long n){
-        long temp=n;
-        long dec=0;
-        long base=1;
-
-        while(temp){
-            long last=temp%10;
-            temp=temp/10;
-            dec+=last*base;
-            base*=2;
-        }
-        dec=(dec+128)%256 -128;
-        return dec;
     }
