@@ -90,7 +90,7 @@ void imem::decode()
         string temp;
 
         temp = instruction.substr(0,12);
-        immed=binaryToDecimal(stol(temp,nullptr,10));
+        immed=binaryToDecimal(stol(temp,NULL,10));
 
         temp = instruction.substr(12,5);
         rs1=binaryToDecimal(stoi(temp,nullptr,10));
@@ -107,7 +107,7 @@ void imem::decode()
         if(opcode == rType)
         {
             temp = instruction.substr(0,7);
-            Rimmed=binaryToDecimal(stol(temp,nullptr,10));
+            Rimmed=binaryToDecimal(stol(temp,NULL,10));
         
             temp = instruction.substr(7,5);
             rs2=binaryToDecimal(stoi(temp,nullptr,10));
@@ -179,7 +179,7 @@ int main(){
         Reg_Init(rd_write[i]);
     }
     
-    string filename = "r_type_jayson.dat"; //change file for testing
+    string filename = "tests/r_type.dat"; //change file for testing
 
     //opening file
     ifstream inputFile;
@@ -219,6 +219,7 @@ int main(){
         switch(choice) {
             case 'r':
                 while (total < 100) {
+                    ob[total].fetch(inputFile);
                     ob[total].decode();
                     if (ob[total].opcode == 0) {
                         break;
@@ -230,6 +231,7 @@ int main(){
 
             case 's':
                 if (total < 100) {
+                    ob[total].fetch(inputFile);
                     ob[total].decode();
                     ob[total].execute(rd_write);
                     total++;
