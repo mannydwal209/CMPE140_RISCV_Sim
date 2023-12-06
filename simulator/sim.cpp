@@ -30,7 +30,7 @@ using namespace std;
 #define OR 110  //      
 #define AND 111  //     
 
-class imem{ //how will this merge work?????
+class imem{
 public:
     string instruction;
     int opcode;
