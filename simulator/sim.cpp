@@ -30,6 +30,29 @@ using namespace std;
 #define OR 110  //      
 #define AND 111  //     
 
+//keep track of reg values
+class reg{
+public:
+    int value;
+    bool isSet;
+};
+
+//converting signed binary to decimal
+int binaryToDecimal(long n){
+    long temp=n;
+    long dec=0;
+    long base=1;
+
+    while(temp){
+        long last=temp%10;
+        temp=temp/10;
+        dec+=last*base;
+        base*=2;
+    }
+    dec=(dec+128)%256 -128;
+    return dec;
+}
+
 class imem{
 public:
     string instruction;
@@ -72,12 +95,7 @@ public:
     }
 };
 
-//keep track of reg values
-class reg{
-public:
-    int value;
-    bool isSet;
-};
+
 
 //function declarations
 void Imem_Init(imem& ob);
@@ -96,7 +114,7 @@ int main(){
         Reg_Init(rd_write[i]);
     }
     
-    string filename = "r_type_jayson.dat"; //change file for testing
+    string filename = "r_type.dat"; //change file for testing
 
     //opening file
     ifstream inputFile;
@@ -110,6 +128,14 @@ int main(){
     string line;
     bool continueLoop = true;   //UI Variables
     int total = 0;
+
+    int opcode = 0;
+    int rd = 0;
+    int func3 = 0;
+    int rs1 = 0;
+    long immed = 0;
+    long Rimmed = 0;
+    int rs2 = 0;
 
      while(getline(inputFile,line)){
         cout << "Select an action:" << endl;    //UI Menu (User Options)
@@ -173,7 +199,7 @@ int main(){
                                     // Immediate value contains the shift amount (lower 5 bits)
                                     int shift_amount = ob[total].immed & 0b00011111;
 
-                                    if (ob[total].Rimmed = 0b0100000) {
+                                    if (ob[total].Rimmed == 0b0100000) {
                                         cout << "SRAI ";
                                         rd_write[ob[total].rd].value = temp_rs1 >> shift_amount;
                                     } else {
@@ -195,6 +221,25 @@ int main(){
                         } 
                         case rType:{
                             switch(ob[total].func3) {
+                                case ADDSUB:{ 
+                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
+                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
+                                    if (Rimmed == 0b0100000)
+                                    {
+                                        cout << "SUB" << endl;
+                                        rd_write[ob[total].rd].value = temp_rs1 - temp_rs2;
+                                        rd_write[ob[total].rd].isSet = true;
+                                    }
+                                    else
+                                    {
+                                        cout << "ADD" << endl;
+                                        rd_write[ob[total].rd].value = temp_rs1 + temp_rs2;
+                                        rd_write[ob[total].rd].isSet = true;
+                                    }
+                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
+                                    break;
+                                }
+
                                 case SLL: {
                                     int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
                                     int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
@@ -209,9 +254,91 @@ int main(){
                                     cout << "result: " << rd_write[ob[total].rd].value << endl;
                                     break;
                                 }
+                                case SLT: {
+                                    cout << "SLT" << endl;
+                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
+                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
+
+                                    if (temp_rs1 < temp_rs2)
+                                    {
+                                        rd_write[ob[total].rd].value = 1;
+                                        rd_write[ob[total].rd].isSet = true;
+                                    }
+                                    else
+                                    {
+                                        rd_write[ob[total].rd].value = 0;
+                                        rd_write[ob[total].rd].isSet = true;
+                                    }
+                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
+                                    break;
+                                }
+                                case SLTU: {
+                                    cout << "SLTU" << endl;
+                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
+                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
+                                    if (temp_rs1 < temp_rs2)
+                                    {
+                                        rd_write[ob[total].rd].value = 1;
+                                        rd_write[ob[total].rd].isSet = true;
+                                    }
+                                    else
+                                    {
+                                        rd_write[ob[total].rd].value = 0;
+                                        rd_write[ob[total].rd].isSet = true;
+                                    }
+                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
+                                    break;
+                                }
+                                case XOR: {
+                                    cout << "XOR" << endl;
+                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
+                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
+                                    rd_write[ob[total].rd].value = temp_rs1 ^ temp_rs2;
+                                    rd_write[ob[total].rd].isSet = true;
+                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
+                                    break;
+                                }
+                                case SRLSRA: {
+                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
+                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
+                                    int bitmask = 0b00011111;
+                                    temp_rs2 = temp_rs2 & bitmask;
+                                    if (Rimmed == 0b0100000)
+                                    { 
+                                        cout << "SRA" << endl;
+                                        rd_write[ob[total].rd].value = (unsigned int)temp_rs1 >> temp_rs2;
+                                        rd_write[ob[total].rd].isSet = true;
+                                    }
+                                    else
+                                    {
+                                        cout << "SRL" << endl;
+                                        rd_write[ob[total].rd].value = (unsigned int)temp_rs1 >> temp_rs2;
+                                        rd_write[ob[total].rd].isSet = true;
+                                    }
+                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
+                                    break;
+                                }
+                                case OR: {
+                                    cout << "OR" << endl;
+                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
+                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
+                                    rd_write[ob[total].rd].value = temp_rs1 | temp_rs2;
+                                    rd_write[ob[total].rd].isSet = true;
+                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
+                                    break;
+                                }
+                                case AND: {
+                                    cout << "AND" << endl;
+                                    int temp_rs1 = rd_write[ob[total].rs1].isSet ? rd_write[ob[total].rs1].value : ob[total].rs1;
+                                    int temp_rs2 = rd_write[ob[total].rs2].isSet ? rd_write[ob[total].rs2].value : ob[total].rs2;
+                                    rd_write[ob[total].rd].value = temp_rs1 & temp_rs2;
+                                    rd_write[ob[total].rd].isSet = true;
+                                    cout << "result: " << rd_write[ob[total].rd].value << endl;
+                                    break;
+                                }
+                                }
+                                break;
                             }
-                            break;
-                        }
                         default:{
                             cout<<"not valid instruction"<<endl;
                             break;
@@ -251,18 +378,4 @@ int main(){
             rd_write.isSet = false;
         }
 
-        //converting signed binary to decimal
-        int binaryToDecimal(long n){
-            long temp=n;
-            long dec=0;
-            long base=1;
-
-            while(temp){
-                long last=temp%10;
-                temp=temp/10;
-                dec+=last*base;
-                base*=2;
-            }
-            dec=(dec+128)%256 -128;
-            return dec;
-        }
+        

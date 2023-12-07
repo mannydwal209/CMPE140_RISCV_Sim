@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/harrynguyen/Library/CloudStorage/OneDrive-Personal/CMPE140_RISCV_Sim/simulator",
+      "program": "/Users/harrynguyen/Library/CloudStorage/OneDrive-Personal/CMPE140_RISCV_Sim/simulator/build/Debug/outDebug"
+    }
+  ]
+}
