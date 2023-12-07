@@ -51,6 +51,8 @@ public:
 
     void decode(const string& inst);
     void execute(reg rd_write[]);    //change to pass by reference
+    void memory(map<long,long> %data_memory);
+    void writeBack(reg rd_write[]);
 };
 
 void Imem_Init(imem& ob){
@@ -118,14 +120,11 @@ void imem::decode(const string& inst) {
     }
 }
 
-void imem::execute(reg rd_write[])  // change to pass by reference
-    {
-    switch (opcode)
-            {
-            case iType:
-            {
-                switch (func3)
-                {
+void imem::execute(reg rd_write[]) 
+{  // change to pass by reference
+    switch (opcode) {
+        case iType:
+            switch (func3) {
                 case ADDI:
                 {
                     cout << "ADDI ";
@@ -302,7 +301,20 @@ void imem::execute(reg rd_write[])  // change to pass by reference
         }
     }       
 
+void imem::memory(map<long,long> &data_memory)
+{
+    
+}
+
+void imem::writeBack(reg rd_write[])
+{
+
+}
+
 int main(){
+
+    map<long, long> data_memory; // Added for memory storage
+
 
     imem ob[100]; //consider 100 instructions
     for (int i=0;i<100;i++){
@@ -369,7 +381,8 @@ int main(){
         {
             cout << "Register " << choice << ": (value goes here)" << endl;
         }else if(choice[0] == '0'){
-            cout << "Memory Address " << choice << ": (value goes here)" << endl;
+            location = stoi(choice.subtr(2),nullptr,16); //Extracts memory address(ignore 0x read addy)
+            cout << "Memory Address " << choice << ": " << data_memory[location] << endl;
         } else if(choice == "pc")
         {
             cout << choice << ": (value goes here)" << endl;
