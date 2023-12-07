@@ -87,33 +87,33 @@ void imem::decode(const string& inst) {
     cout << "immed added: " << immed << endl;
 
     temp = inst.substr(12, 5);
-    rs1 = binaryToDecimal(stoi(temp, nullptr, 10));
+    rs1 = binaryToDecimal(stoi(temp, nullptr, 2));
     cout << "rs1 added: " << rs1 << endl;
 
 
     temp = inst.substr(17, 3);
-    func3 = stoi(temp, nullptr, 10);
-    cout << "func3 added: " << func3 << endl;
+    func3 = stoi(temp, nullptr, 2);
+    cout << "func3 added: " << temp << endl;
 
 
     temp = inst.substr(20, 5);
-    rd = binaryToDecimal(stoi(temp, nullptr, 10));
+    rd = binaryToDecimal(stoi(temp, nullptr, 2));
     cout << "rd added: " << rd << endl;
 
 
     temp = inst.substr(25, 7);
-    opcode = stoi(temp, nullptr, 10);
-    cout << "opcode added: " << opcode << endl;
+    opcode = stoi(temp, nullptr, 2);
+    cout << "opcode added: " << temp << endl;
 
 
     if (opcode == rType) {
         temp = inst.substr(0, 7);
-        Rimmed = binaryToDecimal(stol(temp, NULL, 10));
+        Rimmed = binaryToDecimal(stol(temp, NULL, 2));
         cout << "Rimmed added: " << Rimmed << endl;
 
 
         temp = inst.substr(7, 5);
-        rs2 = binaryToDecimal(stoi(temp, nullptr, 10));
+        rs2 = binaryToDecimal(stoi(temp, nullptr, 2));
         cout << "rs2 added: " << rs2 << endl;
     }
 }
@@ -232,7 +232,7 @@ int main(){
             case 's':
                 if (total < 100) {
                     ob[total].decode(line);
-                    ob[total].execute(rd_write);
+                    //ob[total].execute(rd_write);
                     total++;
                 } else {
                     cout << "Maximum instruction limit reached." << endl;
@@ -241,7 +241,7 @@ int main(){
                 
             case 'x':
                 break;
-            case 'pc':
+            case 'p':
                 break;
             case 'q':
                 break;
