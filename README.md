@@ -8,8 +8,8 @@ All instructions, addresses and registers are 32 bit.
 The simulator must support the following features -
 
 1. Provide the user a prompt with following options -
-   a. ‘r’ runs the entire program in one go till it hits a breakpoint or exits.
-   b. ‘s’ runs the next instruction and then stops and waits for next command
+   a. ‘r’ runs the entire program in one go till it hits a breakpoint or exits. Logically correct
+   b. ‘s’ runs the next instruction and then stops and waits for next command Logically correct
    c. ‘x0’ to ‘x31’ return the contents of the register from the register le (x0 must always stay 0).
    d. ‘0x12345678’ returns the contents from the address 0x12345678 in the data memory.
    This should work for all 32 bit addresses, the value shown above is an example.
@@ -33,5 +33,5 @@ The simulator must support the following features -
    The simulator will be tested against RARS for correct output.
 
    You may also choose how you wish to emulate the data and instruction memories. Instruction memory
-   needs to be a single contiguous memory, so an array will work ne.
+   needs to be a single contiguous memory, so an array will work fine.
    You must decide these details and include them in your project plan and design submission.

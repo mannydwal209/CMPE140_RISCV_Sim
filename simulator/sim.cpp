@@ -92,8 +92,15 @@ int binaryToDecimal(long n){
     
 void imem::decode(const string& inst) {
     string temp = inst.substr(0, 12);
+    instruction = inst;
+
+    /*
     cout << "... converting " << temp << " ..." << endl;
     immed = binaryToDecimal(stol(temp, NULL, 2));
+    cout << "immed added: " << immed << endl;
+    */
+    int immediateValue = stoi(inst.substr(0, 12), nullptr, 2);
+    immed = (immediateValue & 0x800) ? (immediateValue | 0xFFFFF000) : immediateValue;
     cout << "immed added: " << immed << endl;
 
     temp = inst.substr(12, 5);
@@ -364,24 +371,22 @@ int main(){
         Reg_Init(rd_write[i]);
     }
     
-    string filename = "tests/r_type.dat"; //change file for testing
+string filename = "tests/r_type.dat"; // Change file for testing
+    ifstream inputFile(filename);
 
-    //opening file
-    ifstream inputFile;
-    inputFile.open(filename);
-    if(!inputFile.is_open()){
-        cout<<"unable to open file"<<endl;
-        exit(1);
+    if (!inputFile.is_open()) {
+        cout << "Unable to open file" << endl;
+        return 1;
     }
 
     string choice;
     string line;
-    bool continueLoop = true;   //UI Variables
+    bool continueLoop = true;
     int total = 0;
 
-     while(getline(inputFile, line) && choice != "q"){
+    while (continueLoop) {
         cout << "===========================================" << endl;
-        cout << "Select an action:" << endl;    //UI Menu (User Options)
+        cout << "Select an action:" << endl;
         cout << "r. RUN" << endl;
         cout << "s. STEP" << endl;
         cout << "x(reg). RETURN REG" << endl;
@@ -392,50 +397,45 @@ int main(){
         cout << "===========================================" << endl;
         cout << "Enter your choice: ";
 
-        cin >> choice;  //read choice from keyboard
-        char prefix;    //extracting register or memory address
+        cin >> choice;
+        char prefix;
         unsigned int location;
         cout << "______________________________________" << endl << "OUTPUT:" << endl << "______________________________________" << endl;
-        if(choice == "r")
-        {
-            while (total < 100) {
-                ob[total].decode(line);
-                if (ob[total].opcode == 0) {
-                    break;
-                }
-                ob[total].execute(rd_write);
-                total++;
-            }
-        } else if(choice == "s")
-        {
-                if (total < 100) {
+
+        if (choice == "r") {
+            while (!inputFile.eof()) {
+                if (getline(inputFile, line)) {
                     ob[total].decode(line);
+                    cout << "Current Instruction: " << line << endl;
+                    if (ob[total].opcode == 0) {
+                        break;
+                    }
                     ob[total].execute(rd_write);
                     total++;
-                } else {
-                    cout << "Maximum instruction limit reached." << endl;
                 }
-        } else if(choice[0] == 'x')
-        {
-            cout << "Register " << choice << ": (value goes here)" << endl;
-        }else if(choice[0] == '0'){
-
-            location = stoi(choice.substr(2),nullptr,16); //Extracts memory address(ignore 0x read addy)
+            }
+        } else if (choice == "s") {
+            if (getline(inputFile, line)) {
+                ob[total].decode(line);
+                ob[total].execute(rd_write);
+                total++;
+            } else {
+                cout << "Maximum instruction limit reached." << endl;
+            }
+        } else if (choice[0] == 'x') {
+            location = stoi(choice.substr(1), nullptr, 16);
+            cout << "Register :" << choice << ": " << rd_write[location].value << endl;
+        } else if (choice[0] == '0') {
+            /*
+            location = stoi(choice.substr(2), nullptr, 16);
             cout << "Memory Address " << choice << ": " << data_memory[location] << endl;
-        } else if(choice == "pc")
-        {
+            */
+        } else if (choice == "pc") {
             cout << choice << ": (value goes here)" << endl;
-        } else if(choice == "q")
-        {
+        } else if (choice == "q") {
             cout << "Thank you! Run again!" << endl;
+            continueLoop = false;
         }
-
-    }
-
-    // printing instructions --like pc.txt 
-    for(int i=0;i<total;i++){
-        cout <<"Instructions in binary" << endl;
-        cout << ob[i].instruction << endl << endl; //expected 32 bits
     }
 
     //printing reg number and value --like reg.txt
