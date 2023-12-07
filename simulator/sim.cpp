@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <map>
 #include <iomanip>
 using namespace std;
 
@@ -32,7 +33,7 @@ using namespace std;
 #define AND 111  //    
 
 // Load/Store
-#define LW 010 //010
+#define LDW 010 //010
 #define SW 010
 
 //keep track of reg values
@@ -41,6 +42,9 @@ public:
     int value;
     bool isSet;
 };
+
+//global var
+reg rd_write[32]; //32 registers
 
 class imem{
 public:
@@ -55,7 +59,7 @@ public:
 
     void decode(const string& inst);
     void execute(reg rd_write[]);    //change to pass by reference
-    void memory(map<long,long> %data_memory);
+    void memory(map<long,long> &data_memory);
     void writeBack(reg rd_write[]);
 };
 
@@ -276,7 +280,7 @@ void imem::execute(reg rd_write[])
                 }
             }
                 break;
-    }
+    
             case rType:
             {
                 switch (func3)
@@ -304,44 +308,46 @@ void imem::execute(reg rd_write[])
                 cout << "not valid instruction" << endl;
                 break;
             }
+    }
 }
       
 
 void imem::memory(map<long,long> &data_memory)
 {
+    long address,store_address;
     switch (opcode) 
     {
-        case iType:
-            switch (func3) 
+        case 000011:
+            cout << "LW ";
+            address = rd_write[rs1].value + immed;
+            if (data_memory.find(address) != data_memory.end()) 
             {
-                case LW:
-                    cout << "LW ";
-                    long address = rd_write[rs1].value + immed;
-                    if (data_memory.find(address) != data_memory.end()) 
-                    {
-                        rd_write[rd].value = data_memory[address];
-                        rd_write[rd].isSet = true;
-                        cout << "result: " << rd_write[rd].value << endl;
-                    } else 
-                    {
-                        cout << "Error: Memory address not found." << endl;
-                    }
-                    break;
-                case SW:
-                    cout << "SW ";
-                    long store_address = rd_write[rs1].value + immed;
-                    data_memory[store_address] = rd_write[rs2].value;
-                    cout << "Data stored at address " << store_address << ": " << rd_write[rs2].value << endl;
-                    break;
+                rd_write[rd].value = data_memory[address];
+                rd_write[rd].isSet = true;
+                cout << "result: " << rd_write[rd].value << endl;
+            } else 
+            {
+                cout << "Error: Memory address not found." << endl;
             }
             break;
+        case 0100011:
+            cout << "SW ";
+            store_address = rd_write[rs1].value + immed;
+            data_memory[store_address] = rd_write[rs2].value;
+            cout << "Data stored at address " << store_address << ": " << rd_write[rs2].value << endl;
+            break;
+
+
+
     }    
 }
 
+/*
 void imem::writeBack(reg rd_write[], reg output[])
 {
     
 }
+*/
 
 int main(){
 
@@ -353,7 +359,7 @@ int main(){
         Imem_Init(ob[i]);
     }
 
-    reg rd_write[32]; //32 registers
+    
     for (int i=0;i<33;i++){
         Reg_Init(rd_write[i]);
     }
@@ -413,7 +419,8 @@ int main(){
         {
             cout << "Register " << choice << ": (value goes here)" << endl;
         }else if(choice[0] == '0'){
-            location = stoi(choice.subtr(2),nullptr,16); //Extracts memory address(ignore 0x read addy)
+
+            location = stoi(choice.substr(2),nullptr,16); //Extracts memory address(ignore 0x read addy)
             cout << "Memory Address " << choice << ": " << data_memory[location] << endl;
         } else if(choice == "pc")
         {
