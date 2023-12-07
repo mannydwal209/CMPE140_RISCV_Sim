@@ -29,7 +29,11 @@ using namespace std;
 #define XOR 100     //  
 #define SRLSRA 101      
 #define OR 110  //      
-#define AND 111  //     
+#define AND 111  //    
+
+// Load/Store
+#define LW 010 //010
+#define SW 010
 
 //keep track of reg values
 class reg{
@@ -122,9 +126,11 @@ void imem::decode(const string& inst) {
 
 void imem::execute(reg rd_write[]) 
 {  // change to pass by reference
-    switch (opcode) {
+    switch (opcode)
+    {
         case iType:
-            switch (func3) {
+            switch (func3)
+            {
                 case ADDI:
                 {
                     cout << "ADDI ";
@@ -268,9 +274,9 @@ void imem::execute(reg rd_write[])
                     cout << "not valid I-TYPE instruction" << endl;
                     break;
                 }
-                }
-                break;
             }
+                break;
+    }
             case rType:
             {
                 switch (func3)
@@ -298,17 +304,43 @@ void imem::execute(reg rd_write[])
                 cout << "not valid instruction" << endl;
                 break;
             }
-        }
-    }       
+}
+      
 
 void imem::memory(map<long,long> &data_memory)
 {
-    
+    switch (opcode) 
+    {
+        case iType:
+            switch (func3) 
+            {
+                case LW:
+                    cout << "LW ";
+                    long address = rd_write[rs1].value + immed;
+                    if (data_memory.find(address) != data_memory.end()) 
+                    {
+                        rd_write[rd].value = data_memory[address];
+                        rd_write[rd].isSet = true;
+                        cout << "result: " << rd_write[rd].value << endl;
+                    } else 
+                    {
+                        cout << "Error: Memory address not found." << endl;
+                    }
+                    break;
+                case SW:
+                    cout << "SW ";
+                    long store_address = rd_write[rs1].value + immed;
+                    data_memory[store_address] = rd_write[rs2].value;
+                    cout << "Data stored at address " << store_address << ": " << rd_write[rs2].value << endl;
+                    break;
+            }
+            break;
+    }    
 }
 
-void imem::writeBack(reg rd_write[])
+void imem::writeBack(reg rd_write[], reg output[])
 {
-
+    
 }
 
 int main(){
