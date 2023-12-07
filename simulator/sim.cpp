@@ -49,8 +49,7 @@ public:
     long Rimmed;
     int rs2;
 
-    void fetch(ifstream &inputFile);
-    void decode();
+    void decode(const string& inst);
     void execute(reg rd_write[]);    //change to pass by reference
 };
 
@@ -80,92 +79,93 @@ int binaryToDecimal(long n){
     dec=(dec+128)%256 -128;
     return dec;
 }
+    
+void imem::decode(const string& inst) {
+    string temp = inst.substr(0, 12);
+    cout << "... converting " << temp << " ..." << endl;
+    immed = binaryToDecimal(stol(temp, NULL, 2));
+    cout << "immed added: " << immed << endl;
 
-void imem::fetch(ifstream &inputFile)
-    {
-        getline(inputFile,instruction);
+    temp = inst.substr(12, 5);
+    rs1 = binaryToDecimal(stoi(temp, nullptr, 10));
+    cout << "rs1 added: " << rs1 << endl;
+
+
+    temp = inst.substr(17, 3);
+    func3 = stoi(temp, nullptr, 10);
+    cout << "func3 added: " << func3 << endl;
+
+
+    temp = inst.substr(20, 5);
+    rd = binaryToDecimal(stoi(temp, nullptr, 10));
+    cout << "rd added: " << rd << endl;
+
+
+    temp = inst.substr(25, 7);
+    opcode = stoi(temp, nullptr, 10);
+    cout << "opcode added: " << opcode << endl;
+
+
+    if (opcode == rType) {
+        temp = inst.substr(0, 7);
+        Rimmed = binaryToDecimal(stol(temp, NULL, 10));
+        cout << "Rimmed added: " << Rimmed << endl;
+
+
+        temp = inst.substr(7, 5);
+        rs2 = binaryToDecimal(stoi(temp, nullptr, 10));
+        cout << "rs2 added: " << rs2 << endl;
     }
-void imem::decode()
-    {
-        string temp;
+}
 
-        temp = instruction.substr(0,12);
-        immed=binaryToDecimal(stol(temp,NULL,10));
-
-        temp = instruction.substr(12,5);
-        rs1=binaryToDecimal(stoi(temp,nullptr,10));
-
-        temp = instruction.substr(17,3);
-        func3 = stoi(temp,nullptr,10);
-
-        temp = instruction.substr(20,5);
-        rd=binaryToDecimal(stoi(temp,nullptr,10));
-
-        temp = instruction.substr(25,7);
-        opcode = stoi(temp,nullptr,10);
-
-        if(opcode == rType)
-        {
-            temp = instruction.substr(0,7);
-            Rimmed=binaryToDecimal(stol(temp,NULL,10));
-        
-            temp = instruction.substr(7,5);
-            rs2=binaryToDecimal(stoi(temp,nullptr,10));
-        }
-
-    }
-void imem::execute(reg rd_write[])    //change to pass by reference
-{
-        switch (opcode)
-        {
+void imem::execute(reg rd_write[]) {  // change to pass by reference
+    switch (opcode) {
         case iType:
-            switch (func3)
-            {
-            case ADDI:
-                cout << "ADDI ";
-                rd_write[rd].value = rd_write[rs1].value + immed;
-                rd_write[rd].isSet = true;
-                cout << "result: " << rd_write[rd].value << endl;
-                break;
-            case SLLI:
-                cout << "SLLI ";
-                rd_write[rd].value = rd_write[rs1].value << (immed & 0b00011111);
-                rd_write[rd].isSet = true;
-                cout << "result: " << rd_write[rd].value << endl;
-                break;
-            case SRLISRAI:
-                cout << ((Rimmed == 0b0100000) ? "SRAI " : "SRLI ");
-                rd_write[rd].value = ((Rimmed == 0b0100000) ? (rd_write[rs1].value >> (immed & 0b00011111)) : ((unsigned int)rd_write[rs1].value >> (immed & 0b00011111)));
-                rd_write[rd].isSet = true;
-                cout << "result: " << rd_write[rd].value << endl;
-                break;
-            default:
-                cout << "Invalid I-Type instruction" << endl;
-                break;
+            switch (func3) {
+                case ADDI:
+                    cout << "ADDI ";
+                    rd_write[rd].value = rd_write[rs1].value + immed;
+                    rd_write[rd].isSet = true;
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                case SLLI:
+                    cout << "SLLI ";
+                    rd_write[rd].value = rd_write[rs1].value << (immed & 0b00011111);
+                    rd_write[rd].isSet = true;
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                case SRLISRAI:
+                    cout << ((Rimmed == 0b0100000) ? "SRAI " : "SRLI ");
+                    rd_write[rd].value = ((Rimmed == 0b0100000) ? (rd_write[rs1].value >> (immed & 0b00011111))
+                                                                   : ((unsigned int)rd_write[rs1].value >> (immed & 0b00011111)));
+                    rd_write[rd].isSet = true;
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                default:
+                    cout << "Invalid I-Type instruction" << endl;
+                    break;
             }
             break;
 
         case rType:
-            switch (func3)
-            {
-            case SLL:
-                cout << "SLL ";
-                rd_write[rd].value = rd_write[rs1].value << (rd_write[rs2].value & 0b00011111);
-                rd_write[rd].isSet = true;
-                cout << "result: " << rd_write[rd].value << endl;
-                break;
-            default:
-                cout << "Invalid R-Type instruction" << endl;
-                break;
+            switch (func3) {
+                case SLL:
+                    cout << "SLL ";
+                    rd_write[rd].value = rd_write[rs1].value << (rd_write[rs2].value & 0b00011111);
+                    rd_write[rd].isSet = true;
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                default:
+                    cout << "Invalid R-Type instruction" << endl;
+                    break;
             }
             break;
 
         default:
             cout << "Invalid instruction" << endl;
             break;
-        }
+    }
 }
-
 
 int main(){
 
@@ -194,7 +194,7 @@ int main(){
     bool continueLoop = true;   //UI Variables
     int total = 0;
 
-     while(choice != 'q'){
+     while(getline(inputFile, line) && choice != 'q'){
         cout << "Select an action:" << endl;    //UI Menu (User Options)
         cout << "r. RUN" << endl;
         cout << "s. STEP" << endl;
@@ -202,6 +202,7 @@ int main(){
         cout << "x(addr). RETURN ADR" << endl;
         cout << "pc. RETURN PC" << endl;
         cout << "q. QUIT" << endl;
+        cout << "Current Instruction: " << line << endl;
         cout << "Enter your choice: ";
 
         cin >> choice;  //read choice from keyboard
@@ -219,8 +220,7 @@ int main(){
         switch(choice) {
             case 'r':
                 while (total < 100) {
-                    ob[total].fetch(inputFile);
-                    ob[total].decode();
+                    ob[total].decode(line);
                     if (ob[total].opcode == 0) {
                         break;
                     }
@@ -231,8 +231,7 @@ int main(){
 
             case 's':
                 if (total < 100) {
-                    ob[total].fetch(inputFile);
-                    ob[total].decode();
+                    ob[total].decode(line);
                     ob[total].execute(rd_write);
                     total++;
                 } else {
