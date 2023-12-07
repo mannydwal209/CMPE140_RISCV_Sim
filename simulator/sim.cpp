@@ -330,7 +330,7 @@ int main(){
     int total = 0;
 
      while(getline(inputFile, line) && choice != "q"){
-        cout << "===========================================" << endl;
+        cout << endl << endl << endl << "===========================================" << endl;
         cout << "Select an action:" << endl;    //UI Menu (User Options)
         cout << "r. RUN" << endl;
         cout << "s. STEP" << endl;
@@ -345,11 +345,13 @@ int main(){
         cin >> choice;  //read choice from keyboard
         char prefix;    //extracting register or memory address
         unsigned int location;
-        cout << "______________________________________" << endl << "OUTPUT:" << endl << "______________________________________" << endl;
+        cout << "______________________________________" << endl << "OUTPUT:" << endl << "______________________________________" << endl << endl;
         if(choice == "r")
         {
-            while (total < 100) {
+            while (getline(inputFile, line)) {
+
                 ob[total].decode(line);
+                cout << "Current Instruction: " << line << endl;
                 if (ob[total].opcode == 0) {
                     break;
                 }
@@ -380,13 +382,14 @@ int main(){
 
     }
 
-    // printing instructions --like pc.txt 
+    /*
     for(int i=0;i<total;i++){
         cout <<"Instructions in binary" << endl;
         cout << ob[i].instruction << endl << endl; //expected 32 bits
     }
+    */
 
-    //printing reg number and value --like reg.txt
+
     for(int i = 0; i < 32; i++){
         cout << "reg number: " << i << ", reg value: " << rd_write[i].value << endl;
     }
