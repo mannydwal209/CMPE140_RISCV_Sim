@@ -14,7 +14,7 @@ using namespace std;
 //func3
 //I-type
 #define ADDI 0 //000    
-#define STLI 10 //010   
+#define SLTI 10 //010   
 #define SLTIU 11 //011  
 #define XORI 100 //     
 #define ORI 110 //      
@@ -126,49 +126,180 @@ void imem::execute(reg rd_write[])
         case iType:
             switch (func3) {
                 case ADDI:
+                {
                     cout << "ADDI ";
-                    rd_write[rd].value = rd_write[rs1].value + immed;
-                    rd_write[rd].isSet = true;
-                    cout << "result: " << rd_write[rd].value << endl;
+                    // check if rs1 reg already has value, if so use it
+                    if (!rd_write[rs1].isSet)
+                    {
+                        rd_write[rd].value = rs1 + immed;
+                        rd_write[rd].isSet = true;
+                        cout << "result: " << rd_write[rd].value << endl;
+                    }
+                    else
+                    {
+                        rd_write[rd].value = rd_write[rs1].value + immed;
+                        rd_write[rd].isSet = true;
+                        cout << "result: " << rd_write[rd].value << endl;
+                    }
                     break;
-                case SLLI:
-                    cout << "SLLI ";
-                    rd_write[rd].value = rd_write[rs1].value << (immed & 0b00011111);
-                    rd_write[rd].isSet = true;
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                case SRLISRAI:
-                    cout << ((Rimmed == 0b0100000) ? "SRAI " : "SRLI ");
-                    rd_write[rd].value = ((Rimmed == 0b0100000) ? (rd_write[rs1].value >> (immed & 0b00011111))
-                                                                   : ((unsigned int)rd_write[rs1].value >> (immed & 0b00011111)));
-                    rd_write[rd].isSet = true;
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                default:
-                    cout << "Invalid I-Type instruction" << endl;
-                    break;
-            }
-            break;
+                }
 
-        case rType:
-            switch (func3) {
+                case SLTI:
+                {
+                    cout << "SLTI" << endl;
+                    if (rd_write[rs1].value < immed)
+                    {
+                        rd_write[rd].value = 1;
+                        rd_write[rd].isSet = true;
+                    }
+                    else
+                    {
+                        rd_write[rd].value = 0;
+                        rd_write[rd].isSet = true;
+                    }
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                }
+                case SLTIU:
+                {
+                    cout << "SLTIU" << endl;
+                    if ((unsigned int)rd_write[rs1].value < immed)
+                    {
+                        rd_write[rd].value = 1;
+                        rd_write[rd].isSet = true;
+                    }
+                    else
+                    {
+                        rd_write[rd].value = 0;
+                        rd_write[rd].isSet = true;
+                    }
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                }
+                case XORI:
+                {
+                    cout << "XORI" << endl;
+                    if (!rd_write[rs1].isSet)
+                    {
+                        rd_write[rd].value = rd_write[rs1].value ^ immed;
+                        rd_write[rd].isSet = true;
+                    }
+                    else
+                    {
+                        rd_write[rd].value = rd_write[rs1].value ^ immed;
+                        rd_write[rd].isSet = true;
+                    }
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                }
+                case ORI:
+                {
+                    cout << "ORI" << endl;
+                    if (!rd_write[rs1].isSet)
+                    {
+                        rd_write[rd].value = rd_write[rs1].value | immed;
+                        rd_write[rd].isSet = true;
+                    }
+                    else
+                    {
+                        rd_write[rd].value = rd_write[rs1].value | immed;
+                        rd_write[rd].isSet = true;
+                    }
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                }
+                case ANDI:
+                {
+                    cout << "ANDI" << endl;
+                    if (!rd_write[rs1].isSet)
+                    {
+                        rd_write[rd].value = rd_write[rs1].value & immed;
+                        rd_write[rd].isSet = true;
+                    }
+                    else
+                    {
+                        rd_write[rd].value = rd_write[rs1].value & immed;
+                        rd_write[rd].isSet = true;
+                    }
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                }
+
                 case SLL:
+                {
+                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+
+                    // Bitmask to extract last 5 bits of the shift amount
+                    int bitmask = 0b00011111;
+                    temp_rs2 = temp_rs2 & bitmask;
+
                     cout << "SLL ";
-                    rd_write[rd].value = rd_write[rs1].value << (rd_write[rs2].value & 0b00011111);
+                    rd_write[rd].value = temp_rs1 << temp_rs2;
                     rd_write[rd].isSet = true;
                     cout << "result: " << rd_write[rd].value << endl;
                     break;
-                default:
-                    cout << "Invalid R-Type instruction" << endl;
-                    break;
-            }
-            break;
+                }
+                case SRLISRAI:
+                {
+                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
 
-        default:
-            cout << "Invalid instruction" << endl;
-            break;
-    }
-}
+                    // Immediate value contains the shift amount (lower 5 bits)
+                    int shift_amount = immed & 0b00011111;
+
+                    if (Rimmed = 0b0100000)
+                    {
+                        cout << "SRAI ";
+                        rd_write[rd].value = temp_rs1 >> shift_amount;
+                    }
+                    else
+                    {
+                        cout << "SRLI ";
+                        rd_write[rd].value = (unsigned int)temp_rs1 >> shift_amount;
+                    }
+
+                    rd_write[rd].isSet = true;
+
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                }
+                default:
+                {
+                    cout << "not valid I-TYPE instruction" << endl;
+                    break;
+                }
+                }
+                break;
+            }
+            case rType:
+            {
+                switch (func3)
+                {
+                case SLL:
+                {
+                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+
+                    // Bitmask to extract last 5 bits of the shift amount
+                    int bitmask = 0b00011111;
+                    temp_rs2 = temp_rs2 & bitmask;
+
+                    cout << "SLL ";
+                    rd_write[rd].value = temp_rs1 << temp_rs2;
+                    rd_write[rd].isSet = true;
+                    cout << "result: " << rd_write[rd].value << endl;
+                    break;
+                }
+                }
+                break;
+            }
+            default:
+            {
+                cout << "not valid instruction" << endl;
+                break;
+            }
+        }
+    }       
 
 void imem::memory(map<long,long> &data_memory)
 {
