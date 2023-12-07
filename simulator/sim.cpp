@@ -51,6 +51,8 @@ public:
 
     void decode(const string& inst);
     void execute(reg rd_write[]);    //change to pass by reference
+    void memory(map<long,long> %data_memory);
+    void writeBack(reg rd_write[]);
 };
 
 void Imem_Init(imem& ob){
@@ -118,7 +120,8 @@ void imem::decode(const string& inst) {
     }
 }
 
-void imem::execute(reg rd_write[]) {  // change to pass by reference
+void imem::execute(reg rd_write[]) 
+{  // change to pass by reference
     switch (opcode) {
         case iType:
             switch (func3) {
@@ -165,6 +168,16 @@ void imem::execute(reg rd_write[]) {  // change to pass by reference
             cout << "Invalid instruction" << endl;
             break;
     }
+}
+
+void imem::memory(map<long,long> &data_memory)
+{
+    
+}
+
+void imem::writeBack(reg rd_write[])
+{
+
 }
 
 int main(){
