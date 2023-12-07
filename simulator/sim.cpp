@@ -88,7 +88,7 @@ void imem::decode(const string& inst) {
 
     temp = inst.substr(12, 5);
     rs1 = binaryToDecimal(stoi(temp, nullptr, 10));
-    cout << "rs1 added: " << rs1 << endl;
+    cout << "rs1 added: " << rs1 << endl;  
 
 
     temp = inst.substr(17, 3);
@@ -189,47 +189,40 @@ int main(){
         exit(1);
     }
 
-    char choice;
+    string choice;
     string line;
     bool continueLoop = true;   //UI Variables
     int total = 0;
 
-     while(getline(inputFile, line) && choice != 'q'){
+     while(getline(inputFile, line) && choice != "q"){
+        cout << "===========================================" << endl;
         cout << "Select an action:" << endl;    //UI Menu (User Options)
         cout << "r. RUN" << endl;
         cout << "s. STEP" << endl;
         cout << "x(reg). RETURN REG" << endl;
-        cout << "x(addr). RETURN ADR" << endl;
+        cout << "0x(addr). RETURN ADR" << endl;
         cout << "pc. RETURN PC" << endl;
         cout << "q. QUIT" << endl;
         cout << "Current Instruction: " << line << endl;
+        cout << "===========================================" << endl;
         cout << "Enter your choice: ";
 
         cin >> choice;  //read choice from keyboard
         char prefix;    //extracting register or memory address
         unsigned int location;
-        string choiceString(1, choice);
-        istringstream input(choiceString);
-        input >> prefix >> hex >> location;
-
-        if(prefix == 'x')
+        cout << "______________________________________" << endl << "OUTPUT:" << endl << "______________________________________" << endl;
+        if(choice == "r")
         {
-            choice = 'x';
-        }
-
-        switch(choice) {
-            case 'r':
-                while (total < 100) {
-                    ob[total].decode(line);
-                    if (ob[total].opcode == 0) {
-                        break;
-                    }
-                    ob[total].execute(rd_write);
-                    total++;
+            while (total < 100) {
+                ob[total].decode(line);
+                if (ob[total].opcode == 0) {
+                    break;
                 }
-                break;
-
-            case 's':
+                ob[total].execute(rd_write);
+                total++;
+            }
+        } else if(choice == "s")
+        {
                 if (total < 100) {
                     ob[total].decode(line);
                     ob[total].execute(rd_write);
@@ -237,15 +230,17 @@ int main(){
                 } else {
                     cout << "Maximum instruction limit reached." << endl;
                 }
-                break;
-                
-            case 'x':
-                break;
-            case 'pc':
-                break;
-            case 'q':
-                break;
-
+        } else if(choice[0] == 'x')
+        {
+            cout << "Register " << choice << ": (value goes here)" << endl;
+        }else if(choice[0] == '0'){
+            cout << "Memory Address " << choice << ": (value goes here)" << endl;
+        } else if(choice == "pc")
+        {
+            cout << choice << ": (value goes here)" << endl;
+        } else if(choice == "q")
+        {
+            cout << "Thank you! Run again!" << endl;
         }
 
     }
