@@ -169,6 +169,9 @@ void imem::execute(reg rd_write[]) {  // change to pass by reference
 
 int main(){
 
+    map<long, long> data_memory; // Added for memory storage
+
+
     imem ob[100]; //consider 100 instructions
     for (int i=0;i<100;i++){
         Imem_Init(ob[i]);
@@ -234,7 +237,8 @@ int main(){
         {
             cout << "Register " << choice << ": (value goes here)" << endl;
         }else if(choice[0] == '0'){
-            cout << "Memory Address " << choice << ": (value goes here)" << endl;
+            location = stoi(choice.subtr(2),nullptr,16); //Extracts memory address(ignore 0x read addy)
+            cout << "Memory Address " << choice << ": " << data_memory[location] << endl;
         } else if(choice == "pc")
         {
             cout << choice << ": (value goes here)" << endl;
