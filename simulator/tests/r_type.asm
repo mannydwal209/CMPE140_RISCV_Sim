@@ -13,3 +13,4 @@ xor t2, t4, t1
 slt t5, t3, t2
 sltu t5, t2, t3
 nop
+

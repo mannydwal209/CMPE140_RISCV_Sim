@@ -26,21 +26,28 @@ using namespace std;
 #define ADDSUB 0 //000  
 #define SLL 1 //001     
 #define SLT 10 //010    
-#define SLTU 011   //   
+#define SLTU 11   //   
 #define XOR 100     //  
 #define SRLSRA 101      
 #define OR 110  //      
 #define AND 111  //    
 
 // Load/Store
-#define LDW 010 //010
-#define SW 010
+#define LD 10  //010
+#define SW 10 //010
+
 
 //keep track of reg values
 class reg{
 public:
     int value;
     bool isSet;
+};
+
+class mem{
+public:
+    int value;
+    long memAddress;
 };
 
 //global var
@@ -110,7 +117,7 @@ void imem::decode(const string& inst) {
 
     temp = inst.substr(17, 3);
     func3 = stoi(temp, nullptr, 10);
-    cout << "func3 added: " << func3 << endl;
+    cout << "func3 added: " << temp << endl;
 
 
     temp = inst.substr(20, 5);
@@ -120,13 +127,13 @@ void imem::decode(const string& inst) {
 
     temp = inst.substr(25, 7);
     opcode = stoi(temp, nullptr, 10);
-    cout << "opcode added: " << opcode << endl;
+    cout << "opcode added: " << temp << endl;
 
 
     if (opcode == rType) {
         temp = inst.substr(0, 7);
         Rimmed = binaryToDecimal(stol(temp, NULL, 10));
-        cout << "Rimmed added: " << Rimmed << endl;
+        cout << "Rimmed added: " << temp << endl;
 
 
         temp = inst.substr(7, 5);
@@ -137,185 +144,260 @@ void imem::decode(const string& inst) {
 
 void imem::execute(reg rd_write[]) 
 {  // change to pass by reference
-    switch (opcode)
-    {
-        case iType:
-            switch (func3)
-            {
-                case ADDI:
-                {
-                    cout << "ADDI ";
-                    // check if rs1 reg already has value, if so use it
-                    if (!rd_write[rs1].isSet)
-                    {
-                        rd_write[rd].value = rs1 + immed;
-                        rd_write[rd].isSet = true;
-                        cout << "result: " << rd_write[rd].value << endl;
-                    }
-                    else
-                    {
-                        rd_write[rd].value = rd_write[rs1].value + immed;
-                        rd_write[rd].isSet = true;
-                        cout << "result: " << rd_write[rd].value << endl;
-                    }
-                    break;
-                }
+    switch(opcode){
+                        case iType:{
+                            cout << "itype func3: " << func3 << endl;
+                            switch(func3){
+                                case ADDI:{
+                                    cout << "ADDI ";
+                                    //check if rs1 reg already has value, if so use it
+                                    if(!rd_write[rs1].isSet){ 
+                                        rd_write[rd].value = rs1 + immed;
+                                        rd_write[rd].isSet=true;
+                                        cout << "result: " << rd_write[rd].value <<endl;
+                                    }
+                                    else {
+                                        rd_write[rd].value = rd_write[rs1].value + immed;
+                                        rd_write[rd].isSet=true;
+                                        cout << "result: " << rd_write[rd].value <<endl;
+                                    }
+                                    break;
+                                }
+                                case SLLI: {
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
 
-                case SLTI:
-                {
-                    cout << "SLTI" << endl;
-                    if (rd_write[rs1].value < immed)
-                    {
-                        rd_write[rd].value = 1;
-                        rd_write[rd].isSet = true;
-                    }
-                    else
-                    {
-                        rd_write[rd].value = 0;
-                        rd_write[rd].isSet = true;
-                    }
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                }
-                case SLTIU:
-                {
-                    cout << "SLTIU" << endl;
-                    if ((unsigned int)rd_write[rs1].value < immed)
-                    {
-                        rd_write[rd].value = 1;
-                        rd_write[rd].isSet = true;
-                    }
-                    else
-                    {
-                        rd_write[rd].value = 0;
-                        rd_write[rd].isSet = true;
-                    }
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                }
-                case XORI:
-                {
-                    cout << "XORI" << endl;
-                    if (!rd_write[rs1].isSet)
-                    {
-                        rd_write[rd].value = rd_write[rs1].value ^ immed;
-                        rd_write[rd].isSet = true;
-                    }
-                    else
-                    {
-                        rd_write[rd].value = rd_write[rs1].value ^ immed;
-                        rd_write[rd].isSet = true;
-                    }
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                }
-                case ORI:
-                {
-                    cout << "ORI" << endl;
-                    if (!rd_write[rs1].isSet)
-                    {
-                        rd_write[rd].value = rd_write[rs1].value | immed;
-                        rd_write[rd].isSet = true;
-                    }
-                    else
-                    {
-                        rd_write[rd].value = rd_write[rs1].value | immed;
-                        rd_write[rd].isSet = true;
-                    }
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                }
-                case ANDI:
-                {
-                    cout << "ANDI" << endl;
-                    if (!rd_write[rs1].isSet)
-                    {
-                        rd_write[rd].value = rd_write[rs1].value & immed;
-                        rd_write[rd].isSet = true;
-                    }
-                    else
-                    {
-                        rd_write[rd].value = rd_write[rs1].value & immed;
-                        rd_write[rd].isSet = true;
-                    }
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                }
+                                    // Immediate value contains the shift amount (lower 5 bits)
+                                    int shift_amount = immed & 0b00011111;
 
-                case SLL:
-                {
-                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
-                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+                                    cout << "SLLI ";
+                                    rd_write[rd].value = temp_rs1 << shift_amount;
+                                    rd_write[rd].isSet = true;
 
-                    // Bitmask to extract last 5 bits of the shift amount
-                    int bitmask = 0b00011111;
-                    temp_rs2 = temp_rs2 & bitmask;
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case SRLISRAI: {
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
 
-                    cout << "SLL ";
-                    rd_write[rd].value = temp_rs1 << temp_rs2;
-                    rd_write[rd].isSet = true;
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                }
-                case SRLISRAI:
-                {
-                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    immed = binaryToDecimal(stol(instruction.substr(0, 7)));
 
-                    // Immediate value contains the shift amount (lower 5 bits)
-                    int shift_amount = immed & 0b00011111;
+                                    rs2 = binaryToDecimal(stol(instruction.substr(7, 5)));
+                                    cout << "immed added: " << immed << endl;
+                                    cout << "shamt added: " << rs2 << endl;
+                                    
+                                    int shift_amount = rs2;
 
-                    if (Rimmed = 0b0100000)
-                    {
-                        cout << "SRAI ";
-                        rd_write[rd].value = temp_rs1 >> shift_amount;
+                                    if ((immed) == 32) {
+                                        cout << "SRAI ";
+                                        rd_write[rd].value = temp_rs1 >> shift_amount;
+                                    } else {
+                                        cout << "SRLI ";
+                                        rd_write[rd].value = (unsigned int)temp_rs1 >> shift_amount;
+                                    }
+
+                                    rd_write[rd].isSet = true;
+                                    
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case SLTI: {
+                                    cout << "SLTI" << endl;
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+
+                                    if (temp_rs1 < immed) {
+                                        rd_write[rd].value = 1;
+                                    } else {
+                                        rd_write[rd].value = 0;
+                                    }
+
+                                    rd_write[rd].isSet = true;
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case SLTIU: {
+                                    cout << "SLTIU" << endl;
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_immed = immed;
+
+                                    // Comparing rs1 with immed as an unsigned integer
+                                    if ((unsigned int)temp_rs1 < (unsigned int)temp_immed) {
+                                        rd_write[rd].value = 1;
+                                    } else {
+                                        rd_write[rd].value = 0;
+                                    }
+                                    rd_write[rd].isSet = true;
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case XORI: {
+                                    cout << "XORI ";
+                                    if (!rd_write[rs1].isSet) { 
+                                        rd_write[rd].value = rs1 ^ immed;
+                                        rd_write[rd].isSet = true;
+                                        cout << "result: " << rd_write[rd].value << endl;
+                                    } else {
+                                        rd_write[rd].value = rd_write[rs1].value ^ immed;
+                                        rd_write[rd].isSet = true;
+                                        cout << "result: " << rd_write[rd].value << endl;
+                                    }
+                                    break;
+                                }
+                                case ORI: {
+                                    cout << "ORI ";
+                                    // check if rs1 reg already has a value, if so, use it
+                                    if (!rd_write[rs1].isSet) {
+                                        rd_write[rd].value = rs1 | immed; // perform OR operation with immediate value
+                                        rd_write[rd].isSet = true;
+                                        cout << "result: " << rd_write[rd].value << endl;
+                                    } else {
+                                        rd_write[rd].value = rd_write[rs1].value | immed; // perform OR operation
+                                        rd_write[rd].isSet = true;
+                                        cout << "result: " << rd_write[rd].value << endl;
+                                    }
+                                    break;
+                                }
+                                case ANDI: {
+                                    cout << "ANDI ";
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int result = temp_rs1 & immed; // Perform bitwise AND operation
+                                    rd_write[rd].value = result; // Store the result in the destination register
+                                    rd_write[rd].isSet = true;
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                default:{
+                                    cout<<"not valid I-TYPE instruction"<<endl;
+                                    break;
+                                }
+                            }
+                            break;
+                        } 
+                        case rType:{
+                            cout << "rtype func3: "<< func3 << endl;
+                            switch(func3) {
+                                case ADDSUB:{ 
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+                                    if (Rimmed == 0b0100000)
+                                    {
+                                        cout << "SUB" << endl;
+                                        rd_write[rd].value = temp_rs1 - temp_rs2;
+                                        rd_write[rd].isSet = true;
+                                    }
+                                    else
+                                    {
+                                        cout << "ADD" << endl;
+                                        rd_write[rd].value = temp_rs1 + temp_rs2;
+                                        rd_write[rd].isSet = true;
+                                    }
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+
+                                case SLL: {
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+                                    
+                                    // Bitmask to extract last 5 bits of the shift amount
+                                    int bitmask = 0b00011111;
+                                    temp_rs2 = temp_rs2 & bitmask;
+
+                                    cout << "SLL ";
+                                    rd_write[rd].value = temp_rs1 << temp_rs2;
+                                    rd_write[rd].isSet = true;
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case SLT: {
+                                    cout << "SLT" << endl;
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+
+                                    if (temp_rs1 < temp_rs2)
+                                    {
+                                        rd_write[rd].value = 1;
+                                        rd_write[rd].isSet = true;
+                                    }
+                                    else
+                                    {
+                                        rd_write[rd].value = 0;
+                                        rd_write[rd].isSet = true;
+                                    }
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case SLTU: {
+                                    cout << "SLTU" << endl;
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+                                    if (temp_rs1 < temp_rs2)
+                                    {
+                                        rd_write[rd].value = 1;
+                                        rd_write[rd].isSet = true;
+                                    }
+                                    else
+                                    {
+                                        rd_write[rd].value = 0;
+                                        rd_write[rd].isSet = true;
+                                    }
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case XOR: {
+                                    cout << "XOR" << endl;
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+                                    rd_write[rd].value = temp_rs1 ^ temp_rs2;
+                                    rd_write[rd].isSet = true;
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case SRLSRA: {
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+                                    int bitmask = 0b00011111;
+                                    temp_rs2 = temp_rs2 & bitmask;
+                                    if (Rimmed == 0b0100000)
+                                    { 
+                                        cout << "SRA" << endl;
+                                        rd_write[rd].value = (unsigned int)temp_rs1 >> temp_rs2;
+                                        rd_write[rd].isSet = true;
+                                    }
+                                    else
+                                    {
+                                        cout << "SRL" << endl;
+                                        rd_write[rd].value = (unsigned int)temp_rs1 >> temp_rs2;
+                                        rd_write[rd].isSet = true;
+                                    }
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case OR: {
+                                    cout << "OR" << endl;
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+                                    rd_write[rd].value = temp_rs1 | temp_rs2;
+                                    rd_write[rd].isSet = true;
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                case AND: {
+                                    cout << "AND" << endl;
+                                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+                                    rd_write[rd].value = temp_rs1 & temp_rs2;
+                                    rd_write[rd].isSet = true;
+                                    cout << "result: " << rd_write[rd].value << endl;
+                                    break;
+                                }
+                                }
+                                break;
+                            }
+                        default:{
+                            cout<<"not valid instruction"<<endl;
+                            break;
+                        }
                     }
-                    else
-                    {
-                        cout << "SRLI ";
-                        rd_write[rd].value = (unsigned int)temp_rs1 >> shift_amount;
-                    }
-
-                    rd_write[rd].isSet = true;
-
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                }
-                default:
-                {
-                    cout << "not valid I-TYPE instruction" << endl;
-                    break;
-                }
-            }
-                break;
-    
-            case rType:
-            {
-                switch (func3)
-                {
-                case SLL:
-                {
-                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
-                    int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
-
-                    // Bitmask to extract last 5 bits of the shift amount
-                    int bitmask = 0b00011111;
-                    temp_rs2 = temp_rs2 & bitmask;
-
-                    cout << "SLL ";
-                    rd_write[rd].value = temp_rs1 << temp_rs2;
-                    rd_write[rd].isSet = true;
-                    cout << "result: " << rd_write[rd].value << endl;
-                    break;
-                }
-                }
-                break;
-            }
-            default:
-            {
-                cout << "not valid instruction" << endl;
-                break;
-            }
-    }
 }
       
 
@@ -371,7 +453,7 @@ int main(){
         Reg_Init(rd_write[i]);
     }
     
-string filename = "tests/r_type.dat"; // Change file for testing
+string filename = "tests/i_type.dat"; // Change file for testing
     ifstream inputFile(filename);
 
     if (!inputFile.is_open()) {
@@ -393,7 +475,6 @@ string filename = "tests/r_type.dat"; // Change file for testing
         cout << "0x(addr). RETURN ADR" << endl;
         cout << "pc. RETURN PC" << endl;
         cout << "q. QUIT" << endl;
-        cout << "Current Instruction: " << line << endl;
         cout << "===========================================" << endl;
         cout << "Enter your choice: ";
 
@@ -405,17 +486,19 @@ string filename = "tests/r_type.dat"; // Change file for testing
         if (choice == "r") {
             while (!inputFile.eof()) {
                 if (getline(inputFile, line)) {
+                    cout << "Current Instruction: " << line << endl;                    
                     ob[total].decode(line);
-                    cout << "Current Instruction: " << line << endl;
                     if (ob[total].opcode == 0) {
                         break;
                     }
                     ob[total].execute(rd_write);
                     total++;
+                    cout << endl;
                 }
             }
         } else if (choice == "s") {
             if (getline(inputFile, line)) {
+                cout << "Current Instruction: " << line << endl;   
                 ob[total].decode(line);
                 ob[total].execute(rd_write);
                 total++;
@@ -440,7 +523,7 @@ string filename = "tests/r_type.dat"; // Change file for testing
 
     //printing reg number and value --like reg.txt
     for(int i = 0; i < 32; i++){
-        cout << "reg number: " << i << ", reg value: " << rd_write[i].value << endl;
+        cout << "reg number: " << dec << i << ", reg value: " << hex << rd_write[i].value << endl;
     }
     
     return 0;

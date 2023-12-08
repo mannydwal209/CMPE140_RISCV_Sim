@@ -1,0 +1,27 @@
+
+All instructions, addresses and registers are 32 bit.
+The simulator must support the following features -
+1. Provide the user a prompt with following options -
+a. ‘r’ runs the entire program in one go till it hits a breakpoint or exits.
+b. ‘s’ runs the next instruction and then stops and waits for next command
+c. ‘x0’ to ‘x31’ return the contents of the register from the register le (x0 must always
+stay 0).
+d. ‘0x12345678’ returns the contents from the address 0x12345678 in the data memory.
+This should work for all 32 bit addresses, the value shown above is an example.
+e. ‘pc’ returns the value of the PC.
+The above commands need NOT be accepted “while an instruction is being executed i.e. in the
+middle of an instruction”.
+You may choose to design the project your way, so you are free to decide how you want to read the
+instructions etc, the easiest option is to read binary instructions from a le containing one 32 bit
+instruction in each line. You may also choose hexadecimal in place of binary.
+We will assume that the instruction sequence always starts from the instruction memory address
+0x00000000, so no startup code or jumps are required.
+So, text segment starts at 0x00000000 and data segment starts at 0x80000000
+When the simulator starts, it may parse the entire instruction sequence in the le and load all the
+instructions into the instruction memory starting at address 0x00000000. This is the equivalent of
+“Loading”. Then start execution for which it should print a message showing program loading is
+complete and the command options available and wait for a command.
+The simulator will be tested against RARS for correct output.
+You may also choose how you wish to emulate the data and instruction memories. Instruction memory
+needs to be a single contiguous memory, so an array will work ne.
+You must decide these details and include them in your project plan and design submission.
