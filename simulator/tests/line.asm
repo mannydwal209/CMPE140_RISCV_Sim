@@ -56,5 +56,3 @@ lui     t0,%hi(y)
 addi    t0, t0,%lo(y)
 sw t4, 0(t0)
 
-
-
