@@ -235,7 +235,7 @@ void imem::decode(const string& inst) {
 }
 
 
-    if (opcode == 0b1100011) 
+    if (opcode == 1100011) 
     { // Branch instructions
         temp = inst.substr(0, 7);
         int imm_11 = (temp[0] == '1') ? -1 : 0;
@@ -594,6 +594,7 @@ void imem::execute(reg rd_write[])
                 int branch_offset = (imm_12 << 12) | (imm_11 << 11) | (imm_10_5 << 5) | (imm_4_1 << 1);
 
                 int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                //cout << endl << "rs2: " << rs2 << endl;
                 int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
 
                 switch(func3) {
@@ -713,8 +714,10 @@ int main(){
     for (int i=0;i<33;i++){
         Reg_Init(rd_write[i]);
     }
+
+    cout << "INITIALIZING..." << endl << endl;
     
-    string filename = "tests/i_type.dat"; // Change file for testing
+    string filename = "tests/line.dat"; // Change file for testing
     ifstream inputFile(filename);
 
     if (!inputFile.is_open()) {
