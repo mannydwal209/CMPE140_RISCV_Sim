@@ -441,6 +441,7 @@ void imem::writeBack(reg rd_write[], reg output[])
 int main(){
 
     map<long, long> data_memory; // Added for memory storage
+    int pc = 0;
 
 
     imem ob[100]; //consider 100 instructions
@@ -486,13 +487,15 @@ string filename = "tests/i_type.dat"; // Change file for testing
         if (choice == "r") {
             while (!inputFile.eof()) {
                 if (getline(inputFile, line)) {
-                    cout << "Current Instruction: " << line << endl;                    
+                    cout << "Current Instruction: " << line << endl;
                     ob[total].decode(line);
                     if (ob[total].opcode == 0) {
                         break;
                     }
                     ob[total].execute(rd_write);
                     total++;
+                    pc++; // Increment PC after instruction execution
+                    cout << "Program Counter (PC): " << pc << endl; // Display PC value
                     cout << endl;
                 }
             }
@@ -502,19 +505,21 @@ string filename = "tests/i_type.dat"; // Change file for testing
                 ob[total].decode(line);
                 ob[total].execute(rd_write);
                 total++;
+                pc=pc+4;
             } else {
                 cout << "Maximum instruction limit reached." << endl;
             }
         } else if (choice[0] == 'x') {
-            location = stoi(choice.substr(1), nullptr, 16);
-            cout << "Register :" << choice << ": " << rd_write[location].value << endl;
+            location = stoi(choice.substr(1), nullptr, 10);
+            cout<<"Location: "<< dec << location<<endl;
+            cout << "Register :" << choice << ": " << hex << rd_write[location].value << endl;
         } else if (choice[0] == '0') {
             /*
             location = stoi(choice.substr(2), nullptr, 16);
             cout << "Memory Address " << choice << ": " << data_memory[location] << endl;
             */
         } else if (choice == "pc") {
-            cout << choice << ": (value goes here)" << endl;
+            cout << "Program Counter (PC): " << hex << pc << endl;
         } else if (choice == "q") {
             cout << "Thank you! Run again!" << endl;
             continueLoop = false;
