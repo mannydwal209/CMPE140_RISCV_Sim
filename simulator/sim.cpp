@@ -494,7 +494,7 @@ string filename = "tests/i_type.dat"; // Change file for testing
                     }
                     ob[total].execute(rd_write);
                     total++;
-                    pc++; // Increment PC after instruction execution
+                    pc += 4; // Increment PC after instruction execution
                     cout << "Program Counter (PC): " << pc << endl; // Display PC value
                     cout << endl;
                 }
