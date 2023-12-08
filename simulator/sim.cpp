@@ -42,6 +42,8 @@ using namespace std;
 #define BLTU 110
 #define BGEU 111
 
+#define MAX_SIZE 0xFFFFFFFF
+
 //keep track of reg values
 class reg{
 public:
@@ -51,6 +53,7 @@ public:
 
 //global var
 reg rd_write[32]; //32 registers
+int pc = 0;
 
 
 class imem{
@@ -81,14 +84,9 @@ class dmem{
     long address;
     long data;
 
-    void Dmem_Init()
-    {
-        address = 0;
-        data = 0;
-    }
 };
 
-dmem data_memory[250];
+dmem data_memory[MAX_SIZE];
 
 void Imem_Init(imem& ob){
     ob.instruction = "";
@@ -209,6 +207,99 @@ void imem::decode(const string& inst) {
         cout << "rs1 added (SW instruction): " << rs1 << endl;
         cout << "rs2 added (SW instruction): " << rs2 << endl; 
     }
+    if (opcode == 1101111) { // Jump instructions
+        if (func3 == 0) { // JALR
+            int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+            int jump_address = (temp_rs1 + immed) & ~1; // Calculate jump address
+
+            // Save the address of the next instruction (PC + 4) into the destination register
+            rd_write[rd].value = pc + 4;
+            rd_write[rd].isSet = true;
+
+            // Set the program counter (PC) to the jump address
+            pc = jump_address;
+
+            cout << "JALR executed: Jumping to address " << hex << jump_address << endl;
+        } else { // JAL
+            int jump_address = pc + immed; // Calculate jump address
+
+            // Save the address of the next instruction (PC + 4) into the destination register
+            rd_write[rd].value = pc + 4;
+            rd_write[rd].isSet = true;
+
+            // Set the program counter (PC) to the jump address
+            pc = jump_address;
+
+            cout << "JAL executed: Jumping to address " << hex << jump_address << endl;
+        }
+}
+
+
+    if (opcode == 0b1100011) 
+    { // Branch instructions
+        temp = inst.substr(0, 7);
+        int imm_11 = (temp[0] == '1') ? -1 : 0;
+        int imm_10_5 = stoi(inst.substr(1, 6), nullptr, 2);
+        int imm_4_1 = stoi(inst.substr(11, 4), nullptr, 2);
+        int imm_12 = (temp[0] == '1') ? -1 : 0;
+
+        Bimmed = (imm_12 << 12) | (imm_11 << 11) | (imm_10_5 << 5) | (imm_4_1 << 1);
+
+        cout << "Bimmed added: " << Bimmed << endl;
+
+        temp = inst.substr(7, 5);
+        rs2 = stoi(temp, nullptr, 2);
+        cout << "rs2 added (Branch instruction): " << rs2 << endl;
+
+        temp = inst.substr(12, 5);
+        rs1 = stoi(temp, nullptr, 2);
+        cout << "rs1 added (Branch instruction): " << rs1 << endl;
+
+        if (func3 == 0b000) { // BEQ
+            if (rd_write[rs1].value == rd_write[rs2].value) {
+                pc += Bimmed;
+                cout << "BEQ executed: Jumping to address " << hex << pc << endl;
+            } else {
+                pc += 4;
+            }
+        } else if (func3 == 0b001) { // BNE
+            if (rd_write[rs1].value != rd_write[rs2].value) {
+                pc += Bimmed;
+                cout << "BNE executed: Jumping to address " << hex << pc << endl;
+            } else {
+                pc += 4;
+            }
+        } else if (func3 == 0b100) { // BLT
+            if (rd_write[rs1].value < rd_write[rs2].value) {
+                pc += Bimmed;
+                cout << "BLT executed: Jumping to address " << hex << pc << endl;
+            } else {
+                pc += 4;
+            }
+        } else if (func3 == 0b101) { // BGE
+            if (rd_write[rs1].value >= rd_write[rs2].value) {
+                pc += Bimmed;
+                cout << "BGE executed: Jumping to address " << hex << pc << endl;
+            } else {
+                pc += 4;
+            }
+        } else if (func3 == 0b110) { // BLTU
+            if ((unsigned int)rd_write[rs1].value < (unsigned int)rd_write[rs2].value) {
+                pc += Bimmed;
+                cout << "BLTU executed: Jumping to address " << hex << pc << endl;
+            } else {
+                pc += 4;
+            }
+        } else if (func3 == 0b111) { // BGEU
+            if ((unsigned int)rd_write[rs1].value >= (unsigned int)rd_write[rs2].value) {
+                pc += Bimmed;
+                cout << "BGEU executed: Jumping to address " << hex << pc << endl;
+            } else {
+                pc += 4;
+            }
+        }
+    }
+
 
 }
 
@@ -493,6 +584,115 @@ void imem::execute(reg rd_write[])
                 break;
             }
 
+            case 1100011: 
+            { // Branch instructions
+                int imm_11 = (Bimmed & 0b100000000000) ? -1 : 0;
+                int imm_10_5 = (Bimmed >> 4) & 0b111111;
+                int imm_4_1 = (Bimmed >> 8) & 0b1111;
+                int imm_12 = (Bimmed >> 11) & 1;
+
+                int branch_offset = (imm_12 << 12) | (imm_11 << 11) | (imm_10_5 << 5) | (imm_4_1 << 1);
+
+                int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                int temp_rs2 = rd_write[rs2].isSet ? rd_write[rs2].value : rs2;
+
+                switch(func3) {
+                    case BEQ: {
+                        if (temp_rs1 == temp_rs2) {
+                            pc += branch_offset;
+                            cout << "BEQ executed: Jumping to address " << hex << pc << endl;
+                        } else {
+                            pc += 4;
+                        }
+                        break;
+                    }
+                    case BNE: {
+                        if (temp_rs1 != temp_rs2) {
+                            pc += branch_offset;
+                            cout << "BNE executed: Jumping to address " << hex << pc << endl;
+                        } else {
+                            pc += 4;
+                        }
+                        break;
+                    }
+                    case BLT: {
+                        if (temp_rs1 < temp_rs2) {
+                            pc += branch_offset;
+                            cout << "BLT executed: Jumping to address " << hex << pc << endl;
+                        } else {
+                            pc += 4;
+                        }
+                        break;
+                    }
+                    case BGE: {//BGE
+                        if (temp_rs1 >= temp_rs2) {
+                            pc += branch_offset;
+                            cout << "BGE executed: Jumping to address " << hex << pc << endl;
+                        } else {
+                            pc += 4;
+                        }
+                        break;
+                    }
+                    case BLTU: {
+                        if ((unsigned int)temp_rs1 < (unsigned int)temp_rs2) {
+                            pc += branch_offset;
+                            cout << "BLTU executed: Jumping to address " << hex << pc << endl;
+                        } else {
+                            pc += 4;
+                        }
+                        break;
+                    }
+                    case BGEU: {
+                        if ((unsigned int)temp_rs1 >= (unsigned int)temp_rs2) {
+                            pc += branch_offset;
+                            cout << "BGEU executed: Jumping to address " << hex << pc << endl;
+                        } else {
+                            pc += 4;
+                        }
+                        break;
+                    }
+                    default: {
+                        cout << "Invalid branch instruction" << endl;
+                        break;
+                    }
+                }
+                break;
+            }
+
+                // Modify the execute stage for jump instructions (JAL and JALR)
+                case 1101111:
+                { // Jump instructions
+                    // JALR
+                    int temp_rs1 = rd_write[rs1].isSet ? rd_write[rs1].value : rs1;
+                    int jump_address = (temp_rs1 + immed) & ~1; // Calculate jump address
+
+                    // Save the address of the next instruction (PC + 4) into the destination register
+                    rd_write[rd].value = pc + 4;
+                    rd_write[rd].isSet = true;
+
+                    // Set the program counter (PC) to the jump address
+                    pc = jump_address;
+
+                    cout << "JALR executed: Jumping to address " << hex << jump_address << endl;
+                    break;
+                }
+                case 1100111:
+                { // JAL
+                    int jump_address = pc + immed; // Calculate jump address
+
+                    // Save the address of the next instruction (PC + 4) into the destination register
+                    rd_write[rd].value = pc + 4;
+                    rd_write[rd].isSet = true;
+
+                    // Set the program counter (PC) to the jump address
+                    pc = jump_address;
+
+                    cout << "JAL executed: Jumping to address " << hex << jump_address << endl;
+                    break;
+                }
+
+
+
             default:{
             cout<<"not valid instruction"<<endl;
             break;
@@ -505,31 +705,16 @@ void imem::execute(reg rd_write[])
 
 int main(){
 
-    int pc = 0;
-
-
     imem ob[100]; //consider 100 instructions
     for (int i=0;i<100;i++){
         Imem_Init(ob[i]);
     }
-
     
     for (int i=0;i<33;i++){
         Reg_Init(rd_write[i]);
     }
-
-    for (long i=0;i<250;i++){
-        data_memory[i].Dmem_Init();
-    }
-
-    long startingAddr = 0x80000000;
-    for(int i=0;i<128;i++){
-        data_memory[i].address = startingAddr;
-        data_memory[i].data = 0;
-        startingAddr+=4;
-    }
     
-    string filename = "tests/r_type.dat"; // Change file for testing
+    string filename = "tests/i_type.dat"; // Change file for testing
     ifstream inputFile(filename);
 
     if (!inputFile.is_open()) {
@@ -587,13 +772,10 @@ int main(){
             }
         } else if (choice[0] == 'x') {
             location = stoi(choice.substr(1), nullptr, 10);
-            cout<<"Location: "<< dec << location<<endl;
             cout << "Register :" << choice << ": " << hex << rd_write[location].value << endl;
         } else if (choice[0] == '0') {
-            /*
-            location = stoi(choice.substr(2), nullptr, 16);
-            cout << "Memory Address " << choice << ": " << data_memory[location] << endl;
-            */
+            location = stoi(choice.substr(2), nullptr, 10);
+            cout << "Memory :" << choice << ": (read value from memory)" << endl;
         } else if (choice == "pc") {
             cout << "Program Counter (PC): " << hex << pc << endl;
         } else if (choice == "q") {
