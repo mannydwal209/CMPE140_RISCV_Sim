@@ -44,12 +44,6 @@ public:
     bool isSet;
 };
 
-class mem{
-public:
-    int value;
-    long memAddress;
-};
-
 //global var
 reg rd_write[32]; //32 registers
 
